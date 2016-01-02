@@ -2,6 +2,9 @@ var tdep = require('@quarterto/transitive-dependencies');
 
 var methodDepsStore = new WeakMap();
 var resultsMapStore = new WeakMap();
+var staticResultsStore = new WeakMap();
+
+var getOrCall = (that, key) => typeof that[key] === 'function' ? that[key]() : that[key];
 
 module.exports = function computed(...deps) {
 	return function(target, name, descriptor) {
@@ -14,12 +17,16 @@ module.exports = function computed(...deps) {
 		}
 
 		var values = [];
+		var staticResults = staticResultsStore.get(Class);
+		if(!staticResults) {
+			staticResultsStore.set(Class, staticResults = new Map());
+		}
 
 		deps.forEach(dep => {
 			methodDeps.push([name, dep]);
 			if(typeof target[dep] !== 'function') {
 				values.push(dep);
-				resultsMap.set(dep, target[dep]);
+				staticResults.set(dep, target[dep]);
 			}
 		});
 
@@ -29,11 +36,11 @@ module.exports = function computed(...deps) {
 			if(!tdeps) tdeps = tdep(methodDeps, name);
 			var resultsMap = resultsMapStore.get(this);
 			if(!resultsMap) {
-				resultsMapStore.set(this, new Map());
+				resultsMapStore.set(this, resultsMap = staticResults);
 			}
 
 			// yes, rerun the deps here. worst case, the cache will be fresh when orig is run
-			var storedValid = resultsMap.has(name) && tdeps.every(dep => resultsMap.get(dep) === this[dep]());
+			var storedValid = resultsMap.has(name) && tdeps.every(dep => resultsMap.get(dep) === getOrCall(this, dep));
 			if(!storedValid) {
 				var result = orig.call(this);
 				resultsMap.set(name, result);
