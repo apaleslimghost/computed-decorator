@@ -1,8 +1,9 @@
 var tdep = require('@quarterto/transitive-dependencies');
+var invertGraph = require('@quarterto/invert-graph');
 
 var methodDepsStore = new WeakMap();
 var resultsMapStore = new WeakMap();
-var staticResultsStore = new WeakMap();
+var valueKeysStore = new WeakMap();
 
 var getOrCall = (that, key) => typeof that[key] === 'function' ? that[key]() : that[key];
 
@@ -16,17 +17,15 @@ module.exports = function computed(...deps) {
 			methodDepsStore.set(Class, methodDeps = []);
 		}
 
-		var values = [];
-		var staticResults = staticResultsStore.get(Class);
-		if(!staticResults) {
-			staticResultsStore.set(Class, staticResults = new Map());
+		var valueKeys = valueKeysStore.get(Class);
+		if(!valueKeys) {
+			valueKeysStore.set(Class, valueKeys = new Set());
 		}
 
 		deps.forEach(dep => {
 			methodDeps.push([name, dep]);
 			if(typeof target[dep] !== 'function') {
-				values.push(dep);
-				staticResults.set(dep, target[dep]);
+				valueKeys.add(dep);
 			}
 		});
 
@@ -34,13 +33,25 @@ module.exports = function computed(...deps) {
 
 		descriptor.value = function() {
 			if(!tdeps) tdeps = tdep(methodDeps, name);
+
 			var resultsMap = resultsMapStore.get(this);
 			if(!resultsMap) {
-				resultsMapStore.set(this, resultsMap = staticResults);
+				resultsMapStore.set(this, resultsMap = new Map());
 			}
 
-			// yes, rerun the deps here. worst case, the cache will be fresh when orig is run
-			var storedValid = resultsMap.has(name) && tdeps.every(dep => resultsMap.get(dep) === getOrCall(this, dep));
+			var storedValid = resultsMap.has(name) && tdeps
+				.filter(dep => valueKeys.has(dep))
+				.every (dep => {
+						var unchanged = resultsMap.get(dep) === this[dep];
+						if(!unchanged) {
+						tdep(invertGraph(methodDeps), dep).forEach(dependent => {
+								resultsMap.delete(dependent);
+						});
+						}
+						return unchanged;
+				});
+
+			
 			if(!storedValid) {
 				var result = orig.call(this);
 				resultsMap.set(name, result);
@@ -51,3 +62,4 @@ module.exports = function computed(...deps) {
 		};
 	};
 };
+

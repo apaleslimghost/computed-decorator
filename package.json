@@ -25,6 +25,8 @@
     "babel-preset-es2015": "^6.3.13"
   },
   "dependencies": {
-    "@quarterto/transitive-dependencies": "^1.1.0"
+    "@quarterto/invert-graph": "^1.0.0",
+    "@quarterto/transitive-dependencies": "^1.1.0",
+    "toposort": "^0.2.12"
   }
 }
