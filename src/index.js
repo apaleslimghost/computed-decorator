@@ -42,13 +42,13 @@ module.exports = function computed(...deps) {
 			var storedValid = resultsMap.has(name) && tdeps
 				.filter(dep => valueKeys.has(dep))
 				.every (dep => {
-						var unchanged = resultsMap.get(dep) === this[dep];
-						if(!unchanged) {
+					var unchanged = resultsMap.get(dep) === this[dep];
+					if(!unchanged) {
 						tdep(invertGraph(methodDeps), dep).forEach(dependent => {
-								resultsMap.delete(dependent);
+							resultsMap.delete(dependent);
 						});
-						}
-						return unchanged;
+					}
+					return unchanged;
 				});
 
 			
