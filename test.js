@@ -37,4 +37,40 @@ describe('computed decorator', () => {
 			}).to.throw('@computed(...deps) can only annotate methods');
 		});
 	});
+
+	it('should cache simple results', () => {
+		var s = sinon.spy();
+
+		class A {
+			a = 5;
+
+			@computed('a')
+			b() {
+				s();
+				return this.a * 5;
+			}
+		}
+
+		var a = new A;
+		expect(a.b()).to.equal(25);
+		expect(a.b()).to.equal(25);
+		expect(s).to.have.been.calledOnce();
+	});
+
+	it('should invalidate cache when static dependency changes', () => {
+		class A {
+			a = 5;
+
+			@computed('a')
+			b() {
+				return this.a * 5;
+			}
+		}
+
+		var a = new A;
+		expect(a.b()).to.equal(25);
+		a.a = 6;
+		expect(a.b()).to.equal(30);
+	});
+
 });
