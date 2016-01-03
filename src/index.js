@@ -3,9 +3,8 @@ var invertGraph = require('@quarterto/invert-graph');
 
 var methodDepsStore = new WeakMap();
 var resultsMapStore = new WeakMap();
-var valueKeysStore = new WeakMap();
+var valueKeysStore  = new WeakMap();
 
-var getOrCall = (that, key) => typeof that[key] === 'function' ? that[key]() : that[key];
 
 module.exports = function computed(...deps) {
 	switch(typeof deps[0]) {
