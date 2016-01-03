@@ -44,6 +44,7 @@ module.exports = function computed(...deps) {
 				.every (dep => {
 					var unchanged = resultsMap.get(dep) === this[dep];
 					if(!unchanged) {
+						resultsMap.set(dep, this[dep]);
 						tdep(invertGraph(methodDeps), dep).forEach(dependent => {
 							resultsMap.delete(dependent);
 						});
