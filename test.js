@@ -73,4 +73,23 @@ describe('computed decorator', () => {
 		expect(a.b()).to.equal(30);
 	});
 
+	it('should be independent across instances', () => {
+		class A {
+			a = 5;
+
+			@computed('a')
+			b() {
+				return this.a * 5;
+			}
+		}
+
+		var a = new A;
+		var b = new A;
+		expect(a.b()).to.equal(25);
+		expect(b.b()).to.equal(25);
+		a.a = 6;
+		expect(a.b()).to.equal(30);
+		expect(b.b()).to.equal(25);
+	});
+
 });
