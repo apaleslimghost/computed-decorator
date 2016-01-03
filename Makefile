@@ -5,9 +5,9 @@ all: $(LIB_FILES)
 
 lib/%.js: src/%.js
 	mkdir -p $(@D)
-	babel --presets es2015 $< -o $@
+	babel $< -o $@
 
 test: test.js $(LIB_FILES)
-	babel-node --presets es2015 --plugins transform-decorators-legacy,transform-class-properties test.js
+	mocha -r babel-register
 
 .PHONY: test

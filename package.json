@@ -28,5 +28,14 @@
     "@quarterto/invert-graph": "^1.0.0",
     "@quarterto/transitive-dependencies": "^1.1.0",
     "toposort": "^0.2.12"
+  },
+  "babel": {
+    "plugins": [
+      "transform-decorators-legacy",
+      "transform-class-properties"
+    ],
+    "presets": [
+      "es2015"
+    ]
   }
 }
