@@ -44,23 +44,22 @@ module.exports = function computed(...deps) {
 
 			var resultsMap = resultsMapStore.get(this);
 			if(!resultsMap) {
-				resultsMapStore.set(this, resultsMap = new Map());
+				resultsMapStore.set(this, resultsMap = new Map(Array.from(valueKeys).map(key => [key, this[key]])));
 			}
 
 			var storedValid = resultsMap.has(name) && tdeps
 				.filter(dep => valueKeys.has(dep))
 				.every (dep => {
-					var unchanged = resultsMap.get(dep) === this[dep];
-					if(!unchanged) {
+					var changed = resultsMap.get(dep) !== this[dep];
+					if(changed) {
 						resultsMap.set(dep, this[dep]);
 						tdep(invertGraph(methodDeps), dep).forEach(dependent => {
 							resultsMap.delete(dependent);
 						});
 					}
-					return unchanged;
+					return !changed;
 				});
 
-			
 			if(!storedValid) {
 				var result = orig.call(this);
 				resultsMap.set(name, result);
