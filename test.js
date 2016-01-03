@@ -1,31 +1,40 @@
+var expect = require('@quarterto/chai');
+var sinon  = require('sinon');
+
 var computed = require('./');
 
-class Foo {
-  a = 5;
+describe('computed decorator', () => {
+	describe('called incorrectly', () => {
+		it('should barf when not called', () => {
+			expect(() => {
+				class a {
+					@computed
+					a() {}
+				}
+			}).to.throw('@computed(...deps) must be called with arguments');
+		});
 
-  @computed('a')
-  b() {
-    console.log('b');
-    return this.a * 5;
-  }
+		it('should barf when called with no args', () => {
+			expect(() => {
+				class a {
+					@computed()
+					a() {}
+				}
+			}).to.throw('@computed(...deps) requires a non-empty list of dependencies');
+		});
 
-  @computed('b')
-  c() {
-    console.log('c');
-    return this.b() * 5;
-  }
+		it('should barf when used incorrectly on non-method', () => {
+			expect(() => {
+				@computed
+				class a {}
+			}).to.throw('@computed(...deps) can only annotate methods and must be called with arguments');
+		});
 
-  @computed('b', 'c')
-  d() {
-    console.log('d');
-    return this.b() + this.c();
-  }
-}
-
-var foo = new Foo;
-console.log(foo.b());
-console.log(foo.c());
-console.log(foo.d());
-
-foo.a = 6;
-console.log(foo.d());
+		it('should barf when used on non-method', () => {
+			expect(() => {
+				@computed()
+				class a {}
+			}).to.throw('@computed(...deps) can only annotate methods');
+		});
+	});
+});

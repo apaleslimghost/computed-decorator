@@ -8,7 +8,15 @@ var valueKeysStore = new WeakMap();
 var getOrCall = (that, key) => typeof that[key] === 'function' ? that[key]() : that[key];
 
 module.exports = function computed(...deps) {
+	switch(typeof deps[0]) {
+	case 'object':   throw new TypeError('@computed(...deps) must be called with arguments');
+	case 'function': throw new TypeError('@computed(...deps) can only annotate methods and must be called with arguments');
+	}
+
 	return function(target, name, descriptor) {
+		if(typeof target === 'function') throw new TypeError('@computed(...deps) can only annotate methods');
+		if(deps.length === 0) throw new TypeError('@computed(...deps) requires a non-empty list of dependencies');
+
 		var Class = target.constructor;
 		var orig = descriptor.value;
 
